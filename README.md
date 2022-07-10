@@ -16,7 +16,7 @@ The execution of the pipex program should do the same as the next shell command:
 
 ## redirection 개요도
 
-![pipex](/pipex.PNG)
+![pipex](./images/pipex.PNG)
 
 child process에서 infile을 인풋으로한 cmd1을 실행시켜 pipe에 아웃풋.
 pipe를 인풋으로 한 parent process에서 cmd2를 실행시켜 outfile로 아웃풋.
