@@ -17,15 +17,17 @@ CFLAGS = -Wall -Wextra -Werror -c
 RM = rm -f
 AR = ar
 CRS = crs
+INC_DIR = includes
+SRCS_DIR = srcs
 
-SRCS = ft_split.c ft_strdup.c ft_strjoin.c ft_strlen.c ft_strncmp.c pipex.c exit_perror.c
+SRCS = $(addprefix $(SRCS_DIR)/, ft_split.c ft_strdup.c ft_strjoin.c ft_strlen.c ft_strncmp.c pipex.c exit_perror.c)
 
 OBJS = $(SRCS:.c=.o)
 
 all: $(NAME)
 
 %.o: %.c
-		$(CC) $(CFLAGS) $< -o $@
+		$(CC) $(CFLAGS) -I $(INC_DIR) $< -o $@
 
 $(NAME): $(OBJS)
 		$(CC) -o $@ $(OBJS)

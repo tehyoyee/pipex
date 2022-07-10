@@ -1,6 +1,17 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   pipex.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: taehykim <taehykim@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/07/10 15:52:10 by taehykim          #+#    #+#             */
+/*   Updated: 2022/07/10 15:52:13 by taehykim         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "pipex.h"
 #include <sys/wait.h>
-
 
 char	**find_path(char *envp[])
 {
@@ -21,14 +32,20 @@ char	*make_cmd(char **path, char *cmd_arg)
 	int		fd;
 
 	i = 0;
+	fd = access(cmd_arg, X_OK);
+	if (fd != -1)
+		return (cmd_arg);
 	while (path[i])
 	{
-		tmp = ft_strjoin(path[i], ft_strjoin("/", cmd_arg));
+		tmp = ft_strjoin("/", cmd_arg);
+		tmp = ft_strjoin(path[i], tmp);
 		fd = access(tmp, X_OK);
 		if (fd != -1)
 		{
 			return (tmp);
 		}
+		free(tmp);
+		tmp = NULL;
 		i++;
 		close(fd);
 	}
@@ -91,11 +108,10 @@ int	main(int argc, char *argv[], char *envp[])
 	}
 	else
 	{
-		result = 0;
-		waitpid(box.pid, NULL, WNOHANG);	
 		set_fd(box.pipe_fd[1], box.pipe_fd[0], box.outfile);
+		waitpid(box.pid, NULL, WNOHANG);
 		if (execve(box.cmd2, box.cmd2_arg, envp) == -1)
 			exit_perror("execve error", result);
 	}
-	return (WEXITSTATUS(box.pid));
+	return (0);
 }
