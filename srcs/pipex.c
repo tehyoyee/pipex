@@ -56,24 +56,24 @@ void	set_fd(int closed, int std_in, int std_out)
 {
 	close(closed);
 	if (dup2(std_in, STDIN_FILENO) == -1)
-		exit_perror("dup2 error", 1);
+		exit_perror("dup2 for std_in failed", 1);
 	if (dup2(std_out, STDOUT_FILENO) == -1)
-		exit_perror("dup2 error", 1);
+		exit_perror("dup2 for std_out failed", 1);
 	close(std_in);
 	close(std_out);
 }
 
 int	init(t_pipe *box, char *argv[], char *envp[])
 {
-	int	result;
+	int	exit_code;
 
-	result = 1;
+	exit_code = 0;
 	box->infile = open(argv[1], O_RDONLY);
 	if (box->infile == -1)
-		perror("infile");
+		perror("infile open failed");
 	box->outfile = open(argv[4], O_RDWR | O_CREAT | O_TRUNC, 0644);
 	if (box->outfile == -1)
-		exit_perror("outfile", 1);
+		exit_perror("outfile open failed", 1);
 	box->cmd1_arg = ft_split(argv[2], ' ');
 	box->cmd2_arg = ft_split(argv[3], ' ');
 	box->path = find_path(envp);
@@ -81,22 +81,22 @@ int	init(t_pipe *box, char *argv[], char *envp[])
 	box->cmd2 = make_cmd(box->path, box->cmd2_arg[0]);
 	if (box->cmd1 == NULL || box->cmd2 == NULL)
 	{
-		result = 127;
+		exit_code = 127;
 		perror("command not found");
 	}
-	return (result);
+	return (exit_code);
 }
 
 int	main(int argc, char *argv[], char *envp[])
 {
 	t_pipe	box;
-	int		result;
+	int		exit_code;
 
 	if (argc != 5)
-		exit_perror("incorrect argument number.", 1);
-	result = init(&box, argv, envp);
+		exit_perror("incorrect argument number", 1);
+	exit_code = init(&box, argv, envp);
 	if (pipe(box.pipe_fd) < 0)
-		exit_perror("pipe eroor", 1);
+		exit_perror("pipe error", 1);
 	box.pid = fork();
 	if (box.pid == -1)
 		exit_perror("fork error", 1);
@@ -104,14 +104,14 @@ int	main(int argc, char *argv[], char *envp[])
 	{
 		set_fd(box.pipe_fd[0], box.infile, box.pipe_fd[1]);
 		if (execve(box.cmd1, box.cmd1_arg, envp) == -1)
-			exit_perror("execve error", result);
+			exit_perror("execve failed", exit_code);
 	}
 	else
 	{
 		set_fd(box.pipe_fd[1], box.pipe_fd[0], box.outfile);
 		waitpid(box.pid, NULL, WNOHANG);
 		if (execve(box.cmd2, box.cmd2_arg, envp) == -1)
-			exit_perror("execve error", result);
+			exit_perror("execve failed", exit_code);
 	}
-	return (0);
+	return (exit_code);
 }
